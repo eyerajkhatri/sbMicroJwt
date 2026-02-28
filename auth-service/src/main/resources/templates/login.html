@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+
+            background: url('/images/img.png') no-repeat center center fixed;
+            background-size: cover;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+        }
+
+        .card {
+            position: relative;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            text-align: center;
+            z-index: 1;
+
+            transform: translateY(-40px);
+        }
+
+        .card h2 {
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .card p {
+            margin-bottom: 18px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .card input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .card button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background: #4f46e5;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .card button:hover {
+            background: #4338ca;
+        }
+
+        .error {
+            margin-top: 8px;
+            color: red;
+            font-size: 13px;
+        }
+
+        .link {
+            margin-top: 12px;
+            font-size: 12px;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<div class="card">
+    <h2>Welcome to Raj Khatri's App Login Micro Service</h2>
+    <p>Login using your username and password</p>
+
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+
+    <div id="error" class="error"></div>
+
+    <div class="link">
+        New user? <a href="/signup">Create an account</a>
+    </div>
+</div>
+
+<script>
+    function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        fetch("/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Login failed");
+                }
+                return res.json();
+            })
+            .then(data => {
+                localStorage.setItem("jwt", data.token);
+                window.location.href = "/home?username=" + encodeURIComponent(username);
+            })
+            .catch(err => {
+                document.getElementById("error").innerText = "Invalid Username or Password";
+            });
+    }
+</script>
+
+</body>
+</html>

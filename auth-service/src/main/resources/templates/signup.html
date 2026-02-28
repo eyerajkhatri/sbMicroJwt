@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+
+            background: url('/images/img.png') no-repeat center center fixed;
+            background-size: cover;
+
+            position: relative;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+        }
+
+        .card {
+            position: absolute;
+            left: 50%;
+            top: 52%;
+            transform: translate(-50%, -60%);
+
+            background: #ffffff;
+            padding: 24px 26px;
+            border-radius: 14px;
+            width: 420px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+            text-align: center;
+            z-index: 1;
+        }
+
+        .card h2 {
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 22px;
+        }
+
+        .card p {
+            margin-bottom: 14px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 16px;
+            row-gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .form-grid input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+            box-sizing: border-box;
+        }
+
+        .form-grid input:focus {
+            border-color: #4f46e5;
+        }
+
+        .form-grid input[type="email"] {
+            grid-column: span 2;
+        }
+
+        .card button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: #4f46e5;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        .card button:hover {
+            background: #4338ca;
+        }
+
+        .error {
+            margin-top: 8px;
+            color: red;
+            font-size: 13px;
+        }
+
+        .success {
+            margin-top: 8px;
+            color: green;
+            font-size: 13px;
+        }
+
+        .link {
+            margin-top: 12px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<div class="card">
+    <h2>Create Account</h2>
+    <p>Fields marked with * are required</p>
+
+    <div class="form-grid">
+        <input type="text" id="username" placeholder="Username *">
+        <input type="password" id="password" placeholder="Password *">
+
+        <input type="text" id="firstname" placeholder="First Name *">
+        <input type="text" id="lastname" placeholder="Last Name (optional)">
+
+        <input type="email" id="email" placeholder="Email *">
+    </div>
+
+    <button onclick="signup()">Create Account</button>
+
+    <div id="message"></div>
+
+    <div class="link">
+        Already have an account? <a href="/">Login</a>
+    </div>
+</div>
+
+<script>
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    function signup() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const firstname = document.getElementById("firstname").value.trim();
+        const lastname = document.getElementById("lastname").value.trim();
+        const email = document.getElementById("email").value.trim();
+
+        const msg = document.getElementById("message");
+        msg.className = "";
+        msg.innerText = "";
+
+        if (!username || !password || !firstname || !email) {
+            msg.className = "error";
+            msg.innerText = "Please fill all required fields.";
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            msg.className = "error";
+            msg.innerText = "Please enter a valid email address.";
+            return;
+        }
+
+        const data = {
+            userName: username,
+            password: password,
+            firstName: firstname,
+            lastName: lastname,
+            email: email
+        };
+
+        fetch("/NewUser", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+            .then(async res => {
+                const text = await res.text();
+                if (!res.ok) {
+                    throw new Error(text || "Signup failed");
+                }
+                return text;
+            })
+            .then(responseMessage => {
+                if (responseMessage && responseMessage.toLowerCase().includes("exists")) {
+                    msg.className = "error";
+                    msg.innerText = responseMessage;
+                } else {
+                    msg.className = "success";
+                    msg.innerText = "Account created successfully. Please login to continue.";
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 2000);
+                }
+            })
+            .catch(err => {
+                msg.className = "error";
+                msg.innerText = err.message || "Failed to create account. Please try again.";
+            });
+    }
+</script>
+
+</body>
+</html>
